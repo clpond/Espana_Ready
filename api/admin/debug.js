@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
   const user = await storeHGetAll(`user:${username}`)
 
-  if (!user) return res.json({ found: false, username })
+  if (!user) return res.json({ found: false, username, kvEnvSet: !!process.env.KV_REST_API_URL })
 
   res.json({
     found: true,
