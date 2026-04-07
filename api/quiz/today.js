@@ -24,47 +24,63 @@ function buildPrompt(level, topic, flashcardContext) {
   const isAdvanced = level === 'some-experience'
   return `You are a Spain travel Spanish tutor. Generate exactly 10 quiz questions about "${topic}".
 
+Your audience: a group of 39-year-olds traveling through Sevilla and Madrid — no kids, big on food, wine, late nights, and culture. They need practical Spanish for real situations: ordering rebujito at the Feria de Abril, asking what time the flamenco show starts, splitting the bill after tapas in Triana, getting a taxi to the Alcázar, another round of cañas at a rooftop bar, finding out if a restaurant has a table at 10pm. Keep it fun and slightly cheeky — never textbook.
+
 These flashcards were just studied — base some questions on them:
 ${flashcardContext}
 
-Rules — CRITICAL:
+RULES — CRITICAL:
 - Use ONLY Castilian Spanish (Spain), NOT Latin American
 - Use vosotros (not ustedes) for "you all"
-- Include pronunciation hints using "th" for c/z: grathias, thervesa, barthelona
-- Level: ${isAdvanced ? 'Some Experience — full sentences, real dialogue, grammatical nuance, conjugation challenges' : 'Beginner — clear simple vocabulary and phrases'}
-- Mix these 3 question types roughly equally (3-4 of each):
-  1. "multiple-choice": English prompt → pick the correct Spanish phrase (4 options)
-  2. "fill-blank": Spanish sentence with a blank to complete
-  3. "scenario": real travel situation described in English, write what you'd say
+- Include pronunciation hints using "th" for c/z where relevant: grathias, therveza, barthelona
+- Level: ${isAdvanced ? 'Some Experience — full sentences, real dialogue, grammatical nuance, conjugation' : 'Beginner — clear simple vocabulary and short phrases'}
+- Question distribution: 3-4 multiple-choice, 3 tap-blank, 2 reorder, 1 match-pairs
+- No free-text input questions of any kind
 
 Return ONLY valid JSON — an array of exactly 10 objects. No markdown, no extra text.
 
 For type "multiple-choice":
 {
   "type": "multiple-choice",
-  "question": "English question or prompt",
+  "question": "English question or prompt grounded in a real Spain situation",
   "options": ["option A", "option B", "option C", "option D"],
   "answer": "exact text of the correct option",
-  "explanation": "why this is correct, mention Spain-vs-Latin-America differences if relevant"
+  "explanation": "why this is correct, with any Spain-specific pronunciation or cultural note"
 }
 
-For type "fill-blank":
+For type "tap-blank":
 {
-  "type": "fill-blank",
-  "question": "Spanish sentence with ___ for the blank",
-  "answer": "the word(s) that fill the blank",
-  "explanation": "what it means and any pronunciation/cultural note"
+  "type": "tap-blank",
+  "question": "Spanish sentence with ___ where one word is missing",
+  "options": ["correctWord", "wrongWord1", "wrongWord2", "wrongWord3"],
+  "answer": "correctWord",
+  "explanation": "what the full sentence means and any useful notes"
 }
+Note: options must be shuffled — do not put the correct answer first. The blank should be a single word.
 
-For type "scenario":
+For type "reorder":
 {
-  "type": "scenario",
-  "question": "You are in [Spain location]. [Situation]. What do you say?",
-  "answer": "the Spanish phrase or sentence to say",
-  "explanation": "breakdown of the phrase and any tips"
+  "type": "reorder",
+  "question": "English prompt describing what you want to say",
+  "words": ["shuffled", "Spanish", "words", "to", "arrange"],
+  "answer": "correct Spanish word1 word2 word3 word4 word5",
+  "explanation": "breakdown of the phrase and any pronunciation tips"
 }
+Note: words must be shuffled — not in correct order. Use 4-6 words. Answer is the correctly ordered words joined by spaces.
 
-Make questions feel like real Spain travel situations. Fun, practical, memorable.`
+For type "match-pairs":
+{
+  "type": "match-pairs",
+  "question": "Match each Spanish phrase to its English meaning",
+  "pairs": [
+    {"spanish": "Spanish phrase 1", "english": "English meaning 1"},
+    {"spanish": "Spanish phrase 2", "english": "English meaning 2"},
+    {"spanish": "Spanish phrase 3", "english": "English meaning 3"},
+    {"spanish": "Spanish phrase 4", "english": "English meaning 4"}
+  ],
+  "explanation": "notes on any tricky ones or cultural context"
+}
+Note: exactly 4 pairs. Choose phrases from a real shared situation (e.g. all from ordering at a bar, or all from asking about times/directions).`
 }
 
 export default async function handler(req, res) {
@@ -82,14 +98,13 @@ export default async function handler(req, res) {
   const level = req.query.level === 'some-experience' ? 'some-experience' : 'beginner'
   const today = getToday()
   const topic = getTodayTopic()
-  const cacheKey = `quiz:${today}:${level}`
+  const cacheKey = `quiz:${today}:${level}:v2`
 
   const cached = await storeGet(cacheKey)
   if (cached) {
     return res.json({ topic, questions: cached, cached: true })
   }
 
-  // Try to get flashcard context for better quiz generation
   const flashcardKey = `flashcards:${today}:${level}`
   const flashcards = await storeGet(flashcardKey)
   const flashcardContext = flashcards
