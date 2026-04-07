@@ -9,6 +9,7 @@ export default function AuthPage() {
   const [level, setLevel] = useState('beginner')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -78,15 +79,25 @@ export default function AuthPage() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="At least 4 characters"
-              minLength={4}
-              required
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-spain-red focus:outline-none font-medium"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="At least 4 characters"
+                minLength={4}
+                required
+                className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:border-spain-red focus:outline-none font-medium"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg"
+                tabIndex={-1}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
           {mode === 'register' && (
