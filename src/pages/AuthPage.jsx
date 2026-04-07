@@ -38,7 +38,7 @@ export default function AuthPage() {
         <h1 className="text-4xl font-['Playfair_Display'] text-white font-bold text-shadow">
           España Ready
         </h1>
-        <p className="text-white/80 mt-2 text-lg">Learn Spanish before your trip!</p>
+        <p className="text-white/80 mt-2 text-lg">Vamos a España</p>
       </div>
 
       {/* Card */}
