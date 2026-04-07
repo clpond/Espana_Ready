@@ -38,8 +38,11 @@ export default async function handler(req, res) {
     expiresIn: '90d',
   })
 
+  const kvConfigured = !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
+
   res.status(201).json({
     token,
     user: { username, displayName: name.trim(), level: level === 'some-experience' ? 'some-experience' : 'beginner', streak: 0 },
+    ...(!kvConfigured && { warning: 'KV store not configured — account will be lost on server restart' }),
   })
 }
