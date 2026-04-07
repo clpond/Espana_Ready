@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #fdf9f0;
+    color: #1a1a1a;
+  }
+
+  h1, h2 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .card-3d {
+    perspective: 1000px;
+  }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+
+  .card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .card-back {
+    transform: rotateY(180deg);
+  }
+}
+
+/* Spain flag accent stripe */
+.spain-stripe {
+  background: linear-gradient(
+    to bottom,
+    #c60b1e 25%,
+    #ffc400 25%,
+    #ffc400 75%,
+    #c60b1e 75%
+  );
+}
+
+/* Confetti pieces */
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 9999;
+}
