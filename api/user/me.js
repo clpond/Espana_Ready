@@ -18,6 +18,7 @@ export default async function handler(req, res) {
     return res.json({
       username: user.username,
       displayName: user.displayName,
+      avatar: user.avatar ?? '🌍',
       level: user.level ?? 'beginner',
       streak: Number(user.streak ?? 0),
       lastQuizDate: user.lastQuizDate ?? '',

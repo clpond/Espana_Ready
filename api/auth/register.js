@@ -1,21 +1,17 @@
-import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { storeHGetAll, storeHSet } from '../../lib/store.js'
+
+const AVATARS = ['🦅', '🐂', '🌞', '🍷', '💃', '🎸', '⚽', '🌹', '🏰', '🎭', '🌊', '🥘', '🎨', '🎺', '🦁']
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { name, password, level } = req.body ?? {}
-  if (!name || !password) {
-    return res.status(400).json({ error: 'Name and password required' })
-  }
+  const { name, level } = req.body ?? {}
+  if (!name) return res.status(400).json({ error: 'Name required' })
 
   const username = name.trim().toLowerCase()
   if (username.length < 2 || username.length > 20) {
     return res.status(400).json({ error: 'Name must be 2–20 characters' })
-  }
-  if (password.length < 4) {
-    return res.status(400).json({ error: 'Password must be at least 4 characters' })
   }
 
   const existing = await storeHGetAll(`user:${username}`)
@@ -23,12 +19,14 @@ export default async function handler(req, res) {
     return res.status(409).json({ error: 'That name is already taken' })
   }
 
-  const hash = await bcrypt.hash(password, 10)
+  const avatar = AVATARS[Math.floor(Math.random() * AVATARS.length)]
+  const userLevel = level === 'some-experience' ? 'some-experience' : 'beginner'
+
   await storeHSet(`user:${username}`, {
     username,
     displayName: name.trim(),
-    passwordHash: hash,
-    level: level === 'some-experience' ? 'some-experience' : 'beginner',
+    avatar,
+    level: userLevel,
     streak: 0,
     lastQuizDate: '',
     createdAt: new Date().toISOString(),
@@ -42,7 +40,7 @@ export default async function handler(req, res) {
 
   res.status(201).json({
     token,
-    user: { username, displayName: name.trim(), level: level === 'some-experience' ? 'some-experience' : 'beginner', streak: 0 },
+    user: { username, displayName: name.trim(), avatar, level: userLevel, streak: 0 },
     ...(!kvConfigured && { warning: 'KV store not configured — account will be lost on server restart' }),
   })
 }

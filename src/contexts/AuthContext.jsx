@@ -16,20 +16,20 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false))
   }, [])
 
-  const login = useCallback(async (name, password) => {
+  const login = useCallback(async (name) => {
     const data = await apiFetch('/api/auth/login', {
       method: 'POST',
-      body: { name, password },
+      body: { name },
     })
     localStorage.setItem('token', data.token)
     setUser(data.user)
     return data.user
   }, [])
 
-  const register = useCallback(async (name, password, level = 'beginner') => {
+  const register = useCallback(async (name, level = 'beginner') => {
     const data = await apiFetch('/api/auth/register', {
       method: 'POST',
-      body: { name, password, level },
+      body: { name, level },
     })
     localStorage.setItem('token', data.token)
     setUser(data.user)
